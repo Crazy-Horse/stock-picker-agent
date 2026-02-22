@@ -89,7 +89,6 @@ stock-picker-agent/
 
 ```bash
 git clone https://github.com/<YOUR_GITHUB_ORG>/stock-picker-agent.git
-git clone https://github.com/<YOUR_GITHUB_ORG>/stock-picker-agent.git
 cd stock-picker-agent
 ```
 
@@ -272,6 +271,4 @@ Reduce:
 ## License
 
 MIT
-
-```
 
