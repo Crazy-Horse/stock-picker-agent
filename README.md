@@ -25,7 +25,7 @@ Investment research is time-consuming and inconsistent across sources (news, fil
 ## What it does
 
 ### End-to-end workflow
-1. **Discover candidates** (recent news / market activity)
+1. **Discover candidates** (recent news/market activity)
 2. **Retrieve evidence** (RAG over your corpus: filings, transcripts, notes, articles)
 3. **Summarize + extract signals** (catalysts, risks, financial highlights)
 4. **Score + rank ideas** (style-aware rubric)
@@ -33,10 +33,7 @@ Investment research is time-consuming and inconsistent across sources (news, fil
 
 ### Output artifacts
 By default, the run generates:
-- `outputs/rankings.md` — ranked stock ideas with rationale + citations
-- `outputs/rankings.json` — structured rankings for programmatic use
-- `outputs/research_pack/` — per-ticker notes, snippets, and retrieved sources (optional)
-
+- `outputs/decision.md` — The final investment recommendation, including rationale, scores, and supporting evidence.
 ---
 
 ## Architecture (high level)
@@ -56,7 +53,7 @@ Typical agent responsibilities:
 - Python **3.12+** (recommended)
 - **CrewAI** (multi-agent orchestration)
 - **LangGraph** (workflow graph + state transitions)
-- **LangChain** (document loaders / splitters / retrieval helpers)
+- **LangChain** (document loaders/splitters/retrieval helpers)
 - **Chroma** (vector database) *(optional — can swap to FAISS/Pinecone)*
 - LLM provider: OpenAI / Anthropic / Gemini
 - **uv** for dependency management
@@ -65,114 +62,29 @@ Typical agent responsibilities:
 
 ## Project structure
 
-# Stock Picker Agent (CrewAI + LangGraph)
-
-A multi-agent investment research assistant that automates **equity research** and produces a **ranked list of stock ideas** using:
-- **CrewAI** for agent collaboration
-- **LangGraph** for deterministic, auditable workflows
-- **RAG** (vector search) for grounded analysis and citations
-- **LLM synthesis** for summaries, scoring, and investment-style screening
-
-> **Audience (one sentence):** Built for engineers, analysts, and builders who want a reproducible, modular “AI analyst team” that turns news + documents into ranked investment ideas.
-
----
-
-## Why this exists (business impact)
-Investment research is time-consuming and inconsistent across sources (news, filings, transcripts, notes). This project provides a repeatable pipeline to:
-- reduce manual reading and summarization time
-- standardize screening criteria (value/growth/momentum/dividend)
-- keep outputs grounded in retrieved documents (RAG) with traceable sources
-- accelerate early-stage idea generation and triage (not execution)
-
-> ⚠️ **Not financial advice.** This is a research automation demo for educational/engineering purposes.
-
----
-
-## What it does
-
-### End-to-end workflow
-1. **Discover candidates** (recent news / market activity)
-2. **Retrieve evidence** (RAG over your corpus: filings, transcripts, notes, articles)
-3. **Summarize + extract signals** (catalysts, risks, financial highlights)
-4. **Score + rank ideas** (style-aware rubric)
-5. **Output a report** (markdown + structured JSON) with citations and dates
-
-### Output artifacts
-By default, the run generates:
-- `outputs/rankings.md` — ranked stock ideas with rationale + citations
-- `outputs/rankings.json` — structured rankings for programmatic use
-- `outputs/research_pack/` — per-ticker notes, snippets, and retrieved sources (optional)
-
----
-
-## Architecture (high level)
-
-**CrewAI** handles agent roles and tool usage, while **LangGraph** defines the workflow as a graph (stateful, inspectable, and easier to debug than pure prompting).
-
-Typical agent responsibilities:
-- **News Scout**: finds candidate tickers and relevant items
-- **Retriever**: queries the vector store for grounding documents
-- **Fundamentals Analyst**: extracts metrics and constraints
-- **Risk Analyst**: flags red flags, uncertainty, missing data
-- **Portfolio PM / Ranker**: scores + ranks and produces final output
-
----
-
-## Tech stack
-- Python **3.11+** (recommended)
-- **CrewAI** (multi-agent orchestration)
-- **LangGraph** (workflow graph + state transitions)
-- **LangChain** (document loaders / splitters / retrieval helpers)
-- **Pinecone** (vector database) *(optional — can swap to FAISS/Chroma)*
-- LLM provider: OpenAI / Anthropic / Gemini
-- **uv** for dependency management
-
----
-
-## Project structure
-
-```text
 ```text
 stock-picker-agent/
 ├── src/
-│   ├── ai_stock_picker_agent/
-│   │   ├── config/
-│   │   │   ├── agents.yaml
-│   │   │   └── tasks.yaml
-│   │   ├── crew.py                 # CrewAI agents + tasks wiring
-│   │   ├── graph.py                # LangGraph workflow (if enabled)
-│   │   ├── tools/                  # Serper, fundamentals, RAG, etc.
-│   │   └── main.py                 # entrypoint
+│   ├── ai_stock_picker_agent/
+│   │   ├── config/
+│   │   │   ├── agents.yaml
+│   │   │   └── tasks.yaml
+│   │   ├── models/                  # Pydantic schemas for state and outputs
+│   │   ├── logic/                   # Core business logic and scoring math
+│   │   ├── tools/                   # Serper, fundamentals, RAG tools
+│   │   ├── crew.py                  # CrewAI agents + tasks wiring
+│   │   ├── graph.py                 # LangGraph workflow nodes
+│   │   └── main.py                  # Entrypoint
 ├── data/
-│   ├── raw/                        # optional ingested docs
-│   └── processed/                  # optional embeddings / chunked docs
-├── outputs/                        # generated rankings + reports
-├── pyproject.toml
-├── src/
-│   ├── ai_stock_picker_agent/
-│   │   ├── config/
-│   │   │   ├── agents.yaml
-│   │   │   └── tasks.yaml
-│   │   ├── crew.py                 # CrewAI agents + tasks wiring
-│   │   ├── graph.py                # LangGraph workflow (if enabled)
-│   │   ├── tools/                  # Serper, fundamentals, RAG, etc.
-│   │   └── main.py                 # entrypoint
-├── data/
-│   ├── raw/                        # optional ingested docs
-│   └── processed/                  # optional embeddings / chunked docs
-├── outputs/                        # generated rankings + reports
+│   └── raw/                         # Source documents for RAG
+├── outputs/                         # Final decision.md
 ├── pyproject.toml
 └── README.md
 ````
-````
-
----
 ---
 
 ## Quick Start (uv)
-## Quick Start (uv)
 
-### 1) Clone
 ### 1) Clone
 
 ```bash
@@ -213,7 +125,7 @@ PINECONE_API_KEY="..."
 PINECONE_INDEX="stock-picker"
 PINECONE_ENVIRONMENT="..."  # if required by your Pinecone setup
 
-# Optional: tracing / debugging
+# Optional: tracing/debugging
 CREWAI_TRACING_ENABLED=false
 ```
 
@@ -355,13 +267,6 @@ Reduce:
 * **CrewAI version:** [<CREWAI_REPO_URL>](https://github.com/Crazy-Horse/crewai-multi-agent-research)
 * **LangGraph version:** [<LANGGRAPH_REPO_URL>](https://github.com/Crazy-Horse/multi-agent-research)
 
----
-
-## License
-
-MIT
-
-```
 ---
 
 ## License
